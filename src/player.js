@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { Capsule } from 'three/addons/math/Capsule.js';
 import { moveDirection, separation } from './movement.js';
+import { capsuleTriangleContact } from './collision.js';
 import { SEA_LEVEL } from './world/heightmap.js';
 
 /** 体の半径 (m)。 */
@@ -120,19 +121,38 @@ export class Player {
     this._syncCamera();
   }
 
-  /** カプセルが物体にめり込んでいたら押し戻し、接地しているかを判定する。 */
+  /**
+   * カプセルが物体にめり込んでいたら押し戻し、接地しているかを判定する。
+   * Octree.capsuleIntersect() は触れている面の押し戻しを 1 つに合成してしまい、
+   * 地面と壁に同時に触れると地面か壁かの判定がフレームごとに揺れてガタつく。
+   * そのため三角形ごとに地面か壁かを判定して押し戻す。
+   * 三角形との判定も、めり込みを見逃さない capsuleTriangleContact() を使う。
+   */
   _resolveCollisions() {
-    const result = this.octree.capsuleIntersect(this.collider);
+    /** @type {THREE.Triangle[]} */
+    const triangles = [];
+    this.octree.getCapsuleTriangles(this.collider, triangles);
     this.onFloor = false;
-    if (!result) return;
 
-    this.onFloor = result.normal.y > MIN_FLOOR_NORMAL_Y;
-    if (!this.onFloor) {
-      // 壁や急斜面では、面に向かう速度成分だけを打ち消して沿うように動かす
-      this.velocity.addScaledVector(result.normal, -result.normal.dot(this.velocity));
-    }
-    if (result.depth >= 1e-10) {
-      const s = separation(result.normal, result.depth, this.onFloor);
+    const { start, end, radius } = this.collider;
+    for (const { a, b, c } of triangles) {
+      const hit = capsuleTriangleContact(start, end, radius, a, b, c);
+      if (!hit || hit.depth < 1e-10) continue;
+
+      const isFloor = hit.normal.y > MIN_FLOOR_NORMAL_Y;
+      if (isFloor) {
+        this.onFloor = true;
+      } else {
+        // 壁や急斜面では、面に向かう速度成分だけを打ち消して沿うように動かす
+        const n = hit.normal;
+        const into = n.x * this.velocity.x + n.y * this.velocity.y + n.z * this.velocity.z;
+        if (into < 0) {
+          this.velocity.x -= n.x * into;
+          this.velocity.y -= n.y * into;
+          this.velocity.z -= n.z * into;
+        }
+      }
+      const s = separation(hit.normal, hit.depth, isFloor);
       this.collider.translate(new THREE.Vector3(s.x, s.y, s.z));
     }
   }

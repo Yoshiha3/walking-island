@@ -27,10 +27,10 @@ python3 -m http.server 8000   # http://localhost:8000/ を開く
 ## テスト
 
 ```sh
-npm test   # node:test で地形・散布・移動のロジックをテスト
+npm test   # node:test で地形・散布・移動・当たり判定のロジックをテスト
 ```
 
-three.js に依存しないロジック（`src/world/heightmap.js`, `src/world/scatter.js`, `src/movement.js`）を Node でテストしています。
+three.js に依存しないロジック（`src/world/heightmap.js`, `src/world/scatter.js`, `src/movement.js`, `src/collision.js`）を Node でテストしています。
 描画や当たり判定はブラウザ（chrome-devtools MCP など）で確認します。
 
 ## GitHub Pages で公開する
@@ -48,7 +48,8 @@ index.html             importmap で three.js を CDN から読み込む
 style.css
 src/main.js            シーンの組み立てと描画ループ
 src/player.js          一人称視点の操作と当たり判定 (Capsule + Octree)
-src/movement.js        キー入力 → 移動方向 (純粋関数)
+src/movement.js        キー入力 → 移動方向・押し戻し量 (純粋関数)
+src/collision.js       カプセルと三角形の当たり判定 (純粋関数)
 src/world/heightmap.js ノイズと島の高さ・色 (純粋関数)
 src/world/scatter.js   小物の配置位置 (純粋関数)
 src/world/terrain.js   地形メッシュ
