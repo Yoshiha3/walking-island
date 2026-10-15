@@ -6,6 +6,7 @@ import { createIsland } from './world/heightmap.js';
 import { createTerrainMesh } from './world/terrain.js';
 import { createWater } from './world/water.js';
 import { setupSky } from './world/sky.js';
+import { createProps } from './world/props.js';
 import { Octree } from 'three/addons/math/Octree.js';
 import { Player } from './player.js';
 
@@ -31,20 +32,25 @@ Object.assign(sun.shadow.camera, { left: -120, right: 120, top: 120, bottom: -12
 scene.add(sun);
 
 const island = createIsland({ seed: 1 });
-/** プレイヤーがぶつかる物体をまとめるグループ。 */
-const colliders = new THREE.Group();
-colliders.add(createTerrainMesh(island));
-scene.add(colliders);
+const terrain = createTerrainMesh(island);
+scene.add(terrain);
 scene.add(createWater());
-
-const octree = new Octree();
-octree.fromGraphNode(colliders);
 
 const spawn = new THREE.Vector3(0, 0, 40);
 spawn.y = island.heightAt(spawn.x, spawn.z) + 0.2;
+
+const props = await createProps(island, { clearings: [{ x: spawn.x, z: spawn.z, radius: 6 }] });
+scene.add(props.visual);
+
+/** プレイヤーがぶつかる物体をまとめるグループ。当たり判定専用なのでシーンには追加しない。 */
+const colliders = new THREE.Group();
+colliders.add(new THREE.Mesh(terrain.geometry), props.collision);
+const octree = new Octree();
+octree.fromGraphNode(colliders);
 const player = new Player(camera, document.body, { octree, spawn });
 
 const overlay = document.getElementById('overlay');
+document.getElementById('status').textContent = 'クリックして開始';
 overlay.addEventListener('click', () => player.controls.lock());
 player.controls.addEventListener('lock', () => overlay.classList.add('hidden'));
 player.controls.addEventListener('unlock', () => overlay.classList.remove('hidden'));

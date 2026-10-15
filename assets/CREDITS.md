@@ -4,3 +4,7 @@
 - "Kloofendal 48d Partly Cloudy (Pure Sky)" by Greg Zaal / Poly Haven
 - https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky
 - ライセンス: CC0 1.0（Tonemapped JPG を 4096×2048 に縮小して使用）
+
+## 3D モデル (`models/*.glb`)
+- "Nature Kit" (2.1) by Kenney — https://kenney.nl/assets/nature-kit
+- ライセンス: CC0 1.0（同梱の `models/License-Kenney.txt` を参照）
