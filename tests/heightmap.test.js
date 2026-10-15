@@ -65,14 +65,21 @@ test('島の高さは maxHeight を大きく超えない', () => {
   }
 });
 
-test('terrainColor は高さで砂浜・草・岩を切り替える', () => {
+test('terrainColor は高さで砂浜・明るい草原・深い緑を切り替える', () => {
   const sand = terrainColor(0.5);
   const grass = terrainColor(3);
-  const rock = terrainColor(13);
+  const deep = terrainColor(8);
   assert.notDeepEqual(sand, grass);
-  assert.notDeepEqual(grass, rock);
-  for (const c of [sand, grass, rock]) {
+  assert.notDeepEqual(grass, deep);
+  for (const c of [sand, grass, deep]) {
     assert.equal(c.length, 3);
     for (const v of c) assert.ok(v >= 0 && v <= 1);
+  }
+});
+
+test('terrainColor は高い場所でも緑 (灰色の岩肌にならない)', () => {
+  for (const h of [10, 14, 30]) {
+    const [r, g, b] = terrainColor(h);
+    assert.ok(g > r && g > b, `高さ ${h} の色 ${[r, g, b]} が緑でない`);
   }
 });

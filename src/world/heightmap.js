@@ -172,7 +172,7 @@ export function createIsland({ seed = 1, radius = 90, maxHeight = 14, seaDepth =
 }
 
 /**
- * 高さに応じた地面の色 (砂浜・草原・岩肌) を返す。
+ * 高さに応じた地面の色 (砂浜・明るい草原・深い緑) を返す。
  * @param {number} height 地面の高さ (m)
  * @param {number} [maxHeight=14] 島の最大の高さ。色の切り替え位置の基準
  * @returns {[number, number, number]} RGB (各 0〜1)
@@ -180,6 +180,5 @@ export function createIsland({ seed = 1, radius = 90, maxHeight = 14, seaDepth =
 export function terrainColor(height, maxHeight = 14) {
   if (height < SEA_LEVEL + 1.2) return [0.93, 0.85, 0.6]; // 砂浜
   if (height < maxHeight * 0.45) return [0.45, 0.75, 0.3]; // 明るい草原
-  if (height < maxHeight * 0.7) return [0.33, 0.6, 0.25]; // 深い緑
-  return [0.55, 0.52, 0.5]; // 岩肌
+  return [0.33, 0.6, 0.25]; // 深い緑
 }
