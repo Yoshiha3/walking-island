@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { createIsland } from './world/heightmap.js';
 import { createTerrainMesh } from './world/terrain.js';
 import { createWater } from './world/water.js';
+import { setupSky } from './world/sky.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -14,11 +15,11 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x9ec9e8);
+setupSky(scene);
 
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 60, 140);
-camera.lookAt(0, 0, 0);
+camera.position.set(0, 8, 100);
+camera.lookAt(0, 6, 0);
 
 scene.add(new THREE.HemisphereLight(0xdff1ff, 0x5a7a3a, 1.2));
 
