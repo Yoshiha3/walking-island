@@ -6,6 +6,7 @@ import { createIsland } from './world/heightmap.js';
 import { createTerrainMesh } from './world/terrain.js';
 import { createWater } from './world/water.js';
 import { setupSky } from './world/sky.js';
+import { Octree } from 'three/addons/math/Octree.js';
 import { Player } from './player.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -30,13 +31,18 @@ Object.assign(sun.shadow.camera, { left: -120, right: 120, top: 120, bottom: -12
 scene.add(sun);
 
 const island = createIsland({ seed: 1 });
-scene.add(createTerrainMesh(island));
+/** プレイヤーがぶつかる物体をまとめるグループ。 */
+const colliders = new THREE.Group();
+colliders.add(createTerrainMesh(island));
+scene.add(colliders);
 scene.add(createWater());
 
-const player = new Player(camera, document.body, {
-  heightAt: island.heightAt,
-  spawn: new THREE.Vector3(0, 0, 40),
-});
+const octree = new Octree();
+octree.fromGraphNode(colliders);
+
+const spawn = new THREE.Vector3(0, 0, 40);
+spawn.y = island.heightAt(spawn.x, spawn.z) + 0.2;
+const player = new Player(camera, document.body, { octree, spawn });
 
 const overlay = document.getElementById('overlay');
 overlay.addEventListener('click', () => player.controls.lock());
@@ -60,4 +66,4 @@ renderer.setAnimationLoop(() => {
 });
 
 // 開発時にブラウザのコンソールや chrome-devtools MCP から状態を確認できるようにする
-window.game = { scene, camera, player, island };
+window.game = { scene, camera, player, island, octree };
