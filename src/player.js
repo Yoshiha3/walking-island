@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { Capsule } from 'three/addons/math/Capsule.js';
-import { moveDirection } from './movement.js';
+import { moveDirection, separation } from './movement.js';
 import { SEA_LEVEL } from './world/heightmap.js';
 
 /** 体の半径 (m)。 */
@@ -108,8 +108,9 @@ export class Player {
       // 地面にいるときは入力どおりの速さで歩く (慣性で滑らないようにする)
       this.velocity.x = dir.x * WALK_SPEED;
       this.velocity.z = dir.z * WALK_SPEED;
-      // 下り坂で浮かないよう、少しだけ地面に押し付ける
-      this.velocity.y = -1;
+      // 下り坂で浮かないよう地面に押し付ける。地面では真上にしか押し戻さないので横にはずれない。
+      // 歩く速さの 1.5 倍あれば、地面とみなす最も急な坂 (約 53°) でも足が離れない
+      this.velocity.y = -WALK_SPEED * 1.5;
     } else {
       this.velocity.y -= GRAVITY * dt;
     }
@@ -131,7 +132,8 @@ export class Player {
       this.velocity.addScaledVector(result.normal, -result.normal.dot(this.velocity));
     }
     if (result.depth >= 1e-10) {
-      this.collider.translate(result.normal.multiplyScalar(result.depth));
+      const s = separation(result.normal, result.depth, this.onFloor);
+      this.collider.translate(new THREE.Vector3(s.x, s.y, s.z));
     }
   }
 

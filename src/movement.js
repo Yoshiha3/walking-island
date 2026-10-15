@@ -41,3 +41,20 @@ export function moveDirection(pressed, yaw) {
   const length = Math.hypot(x, z);
   return { x: x / length, z: z / length };
 }
+
+/**
+ * 物体にめり込んだ体を押し戻す量を求める。
+ * 地面とみなす面では真上にだけ押し戻す。法線方向に押し戻すと坂で少しずつ下へずれてしまうため。
+ * 壁や急斜面では法線方向に押し戻し、面に沿って滑るようにする。
+ * @param {{ x: number, y: number, z: number }} normal めり込んだ面の法線 (長さ 1)
+ * @param {number} depth めり込みの深さ (m)
+ * @param {boolean} isFloor その面を地面とみなすか
+ * @returns {{ x: number, y: number, z: number }} 体を動かす量 (m)
+ */
+export function separation(normal, depth, isFloor) {
+  if (isFloor) {
+    // 傾いた面から深さ depth だけ離すのに必要な真上への移動量は depth / normal.y
+    return { x: 0, y: depth / normal.y, z: 0 };
+  }
+  return { x: normal.x * depth, y: normal.y * depth, z: normal.z * depth };
+}
