@@ -6,6 +6,7 @@ import { createIsland } from './world/heightmap.js';
 import { createTerrainMesh } from './world/terrain.js';
 import { createWater } from './world/water.js';
 import { setupSky } from './world/sky.js';
+import { Player } from './player.js';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -18,8 +19,6 @@ const scene = new THREE.Scene();
 setupSky(scene);
 
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 8, 100);
-camera.lookAt(0, 6, 0);
 
 scene.add(new THREE.HemisphereLight(0xdff1ff, 0x5a7a3a, 1.2));
 
@@ -34,6 +33,16 @@ const island = createIsland({ seed: 1 });
 scene.add(createTerrainMesh(island));
 scene.add(createWater());
 
+const player = new Player(camera, document.body, {
+  heightAt: island.heightAt,
+  spawn: new THREE.Vector3(0, 0, 40),
+});
+
+const overlay = document.getElementById('overlay');
+overlay.addEventListener('click', () => player.controls.lock());
+player.controls.addEventListener('lock', () => overlay.classList.add('hidden'));
+player.controls.addEventListener('unlock', () => overlay.classList.remove('hidden'));
+
 /** ウィンドウサイズの変更に合わせてカメラとレンダラーを更新する。 */
 function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -42,6 +51,13 @@ function onResize() {
 }
 window.addEventListener('resize', onResize);
 
+const timer = new THREE.Clock();
 renderer.setAnimationLoop(() => {
+  // タブ切り替え直後などに大きな dt で吹き飛ばないよう上限を設ける
+  const dt = Math.min(timer.getDelta(), 0.05);
+  player.update(dt);
   renderer.render(scene, camera);
 });
+
+// 開発時にブラウザのコンソールや chrome-devtools MCP から状態を確認できるようにする
+window.game = { scene, camera, player, island };
