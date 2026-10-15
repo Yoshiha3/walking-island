@@ -1,0 +1,11 @@
+{
+  "name": "threejs-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "一人称視点でローポリの島を歩くだけのブラウザゲーム",
+  "type": "module",
+  "scripts": {
+    "serve": "npx --yes serve .",
+    "test": "node --test"
+  }
+}

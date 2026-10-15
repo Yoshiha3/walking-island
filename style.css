@@ -1,0 +1,37 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #9ec9e8;
+  font-family: system-ui, sans-serif;
+}
+
+canvas {
+  display: block;
+}
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+#overlay.hidden {
+  display: none;
+}
+
+#overlay h1 {
+  margin: 0 0 0.5em;
+  font-size: 2rem;
+}
+
+#overlay p {
+  margin: 0.25em 0;
+}
